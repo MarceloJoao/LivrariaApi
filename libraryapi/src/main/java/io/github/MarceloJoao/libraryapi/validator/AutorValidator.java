@@ -10,25 +10,39 @@ import java.util.Optional;
 
 @Component
 public class AutorValidator {
-    private AutorRepository autorRepository;
+
+    private final AutorRepository autorRepository;
 
     public AutorValidator(AutorRepository autorRepository) {
         this.autorRepository = autorRepository;
     }
 
-    public void validar(Autor autor){
-        if(existeAutorCadastrado(autor)){
-           throw new RegistroDuplicadoException("Autor já cadastrado");
+    public void validar(Autor autor) {
+        if (existeAutorCadastrado(autor)) {
+            throw new RegistroDuplicadoException("Autor já cadastrado");
         }
     }
 
-    private boolean existeAutorCadastrado(Autor autor){
-        Optional<Autor> autorEncontrado = autorRepository.findByNomeAndDataNascimentoAndNacionalidade(autor.getNome(), autor.getDataNascimento(), autor.getNacionalidade());
+    private boolean existeAutorCadastrado(Autor autor) {
 
-        if(autor.getId() != null){
-           return autorEncontrado.isPresent();
+        Optional<Autor> autorEncontrado =
+                autorRepository.findByNomeAndDataNascimentoAndNacionalidade(
+                        autor.getNome(),
+                        autor.getDataNascimento(),
+                        autor.getNacionalidade()
+                );
+
+        // ✅ NÃO EXISTE AUTOR IGUAL → OK
+        if (autorEncontrado.isEmpty()) {
+            return false;
         }
 
-        return !autor.getId().equals(autorEncontrado.get().getId()) && autorEncontrado.isPresent();
+        // ✅ CREATE (autor novo)
+        if (autor.getId() == null) {
+            return true;
+        }
+
+        // ✅ UPDATE: verifica se é outro autor
+        return !autor.getId().equals(autorEncontrado.get().getId());
     }
 }

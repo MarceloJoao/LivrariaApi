@@ -5,7 +5,9 @@ import io.github.MarceloJoao.libraryapi.model.Autor;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public record AutorDTO(UUID id, String nome, LocalDate dataNascimento, String nacionalidade) {
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+public record AutorDTO(UUID id, String nome, @JsonFormat(pattern = "yyyy-MM-dd") LocalDate dataNascimento, String nacionalidade) {
 
    public Autor mapearParaAutor() {
        Autor autor = new Autor();
