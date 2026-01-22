@@ -1,16 +1,9 @@
-function mostrarCadastro() {
-  document.getElementById("conteudo").innerHTML = `
-    <h2>Novo Autor</h2>
+const form = document.getElementById("autorForm");
+const mensagem = document.getElementById("mensagem");
 
-    <input id="nome" placeholder="Nome" />
-    <input id="nacionalidade" placeholder="Nacionalidade" />
-    <input id="dataNascimento" type="date" />
+form.addEventListener("submit", async (event) => {
+  event.preventDefault(); // ⬅️ ESSENCIAL
 
-    <button onclick="salvarAutor()">Salvar</button>
-  `;
-}
-
-async function salvarAutor() {
   const autor = {
     nome: document.getElementById("nome").value,
     nacionalidade: document.getElementById("nacionalidade").value,
@@ -19,20 +12,20 @@ async function salvarAutor() {
 
   try {
     await criarAutor(autor);
-    alert("Autor salvo com sucesso!");
-    listarAutores();
-  } catch (e) {
-    alert(e.message);
+
+    mensagem.innerHTML = `
+      <div class="alert alert-success">
+        Autor cadastrado com sucesso!
+      </div>
+    `;
+
+    form.reset();
+
+  } catch (error) {
+    mensagem.innerHTML = `
+      <div class="alert alert-danger">
+        Não foi possível conectar ao backend
+      </div>
+    `;
   }
-}
-
-async function listarAutores() {
-  const autores = await buscarAutores();
-
-  document.getElementById("conteudo").innerHTML = `
-    <h2>Autores</h2>
-    <ul>
-      ${autores.map(a => `<li>${a.nome} - ${a.nacionalidade}</li>`).join("")}
-    </ul>
-  `;
-}
+});
