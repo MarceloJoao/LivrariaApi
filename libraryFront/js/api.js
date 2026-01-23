@@ -18,3 +18,13 @@ async function buscarAutores() {
   const response = await fetch(API_URL);
   return response.json();
 }
+
+async function excluirAutor(id) {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE"
+  });
+
+  if (!response.ok) {
+    throw new Error("Erro ao excluir autor");
+  }
+}

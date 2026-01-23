@@ -2,7 +2,7 @@ const form = document.getElementById("autorForm");
 const mensagem = document.getElementById("mensagem");
 
 form.addEventListener("submit", async (event) => {
-  event.preventDefault(); // ⬅️ ESSENCIAL
+  event.preventDefault(); 
 
   const autor = {
     nome: document.getElementById("nome").value,
