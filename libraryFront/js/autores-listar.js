@@ -83,9 +83,6 @@ async function listarAutores() {
   }
 }
 
-/* =========================
-   MODAL EDITAR
-========================= */
 function abrirModalEditar(autor) {
   document.getElementById("editId").value = autor.id;
   document.getElementById("editNome").value = autor.nome;
@@ -101,6 +98,8 @@ function abrirModalEditar(autor) {
 document.getElementById("btnSalvarEdicao")
   .addEventListener("click", async () => {
 
+  const mensagem = document.getElementById("mensagem");
+
   const id = document.getElementById("editId").value;
 
   const autor = {
@@ -112,24 +111,34 @@ document.getElementById("btnSalvarEdicao")
   try {
     await editarAutor(id, autor);
 
+    // Mensagem de sucesso
+    mensagem.innerHTML = `
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Autor <strong>${autor.nome}</strong> atualizado com sucesso!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    `;
+
+    // Fecha o modal
     bootstrap.Modal.getInstance(
       document.getElementById("modalEditarAutor")
     ).hide();
 
-    document.getElementById("mensagem").innerHTML = `
-      <div class="alert alert-success alert-dismissible fade show">
-        Autor editado com sucesso!
-        <button class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    `;
+  setTimeout(() => {
+  const alert = document.querySelector(".alert");
+  if (alert) alert.remove();
+}, 4000);
 
-    listarAutores();
 
   } catch (e) {
-    alert("Erro ao editar autor");
+    mensagem.innerHTML = `
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        Erro ao editar autor
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    `;
   }
 });
-
 
 function formatarData(data) {
   if (!data) return "-";
