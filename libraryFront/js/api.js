@@ -28,3 +28,17 @@ async function excluirAutor(id) {
     throw new Error("Erro ao excluir autor");
   }
 }
+
+async function editarAutor(id, autor) {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(autor)
+  });
+
+  if (!response.ok) {
+    throw new Error("Erro ao editar autor");
+  }
+}
