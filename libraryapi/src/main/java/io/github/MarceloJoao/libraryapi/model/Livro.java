@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name = "livro")
 @Data
@@ -39,6 +41,7 @@ public class Livro {
 
     @ManyToOne(fetch = FetchType.LAZY)//(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_autor")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Autor autor;
 
 }
