@@ -57,7 +57,7 @@ O projeto permite cadastrar, editar, excluir e listar autores e livros, aplicand
 O banco de dados PostgreSQL é executado via **Docker**.
 
 ## Clonar o repositório
-git clone https://github.com/seu-usuario/library-api.git
+git clone https://github.com/seu-usuario/LivrariaApi
 
 ## Entrar no projeto
 cd library-api
