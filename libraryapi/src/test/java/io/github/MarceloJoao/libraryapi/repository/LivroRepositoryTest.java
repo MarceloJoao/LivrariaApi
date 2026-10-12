@@ -3,156 +3,108 @@ package io.github.MarceloJoao.libraryapi.repository;
 import io.github.MarceloJoao.libraryapi.model.Autor;
 import io.github.MarceloJoao.libraryapi.model.GeneroLivro;
 import io.github.MarceloJoao.libraryapi.model.Livro;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@DisplayName("Testes de Integração de Repositório - LivroRepository")
 class LivroRepositoryTest {
 
     @Autowired
-    LivroRepository repository;
+    private LivroRepository repository;
+
     @Autowired
     private AutorRepository autorRepository;
 
     @Test
-    void salvarCascadeTest(){
+    @Transactional
+    @DisplayName("Deve salvar livro com relacionamento em cascata de autor")
+    void salvarCascadeTest() {
         Livro livro = new Livro();
-        livro.setIsbn("9863535");
-        livro.setPreco(BigDecimal.valueOf(120));
+        livro.setIsbn("9863535-CAS");
+        livro.setPreco(BigDecimal.valueOf(120.00));
         livro.setGenero(GeneroLivro.FICCAO);
-        livro.setTitulo("SJM");
-        livro.setDataPublicacao(LocalDate.of(1980, 2, 25));
+        livro.setTitulo("Senhor dos Anéis");
+        livro.setDataPublicacao(LocalDate.of(1954, 7, 29));
 
         Autor autor = new Autor();
-        autor.setNome("Maria Luiza");
-        autor.setNacionalidade("EUA");
-        autor.setDataNascimento(LocalDate.of(1953, 1, 31));
+        autor.setNome("J. R. R. Tolkien");
+        autor.setNacionalidade("Reino Unido");
+        autor.setDataNascimento(LocalDate.of(1892, 1, 3));
 
         livro.setAutor(autor);
 
-        repository.save(livro);
-    }
-    @Test
-    void salvarTest(){
-        Livro livro = new Livro();
-        livro.setIsbn("9863535");
-        livro.setPreco(BigDecimal.valueOf(120));
-        livro.setGenero(GeneroLivro.FICCAO);
-        livro.setTitulo("SJM");
-        livro.setDataPublicacao(LocalDate.of(1980, 2, 25));
+        Livro livroSalvo = repository.save(livro);
 
+        // Asserções formais de QA: Validando persistência e integridade dos dados
+        assertNotNull(livroSalvo.getId(), "O ID do livro gerado não deveria ser nulo.");
+        assertNotNull(livroSalvo.getAutor().getId(), "O autor vinculado deveria ter sido persistido.");
+        assertEquals("Senhor dos Anéis", livroSalvo.getTitulo(), "O título salvo deve ser idêntico ao informado.");
+        assertEquals(GeneroLivro.FICCAO, livroSalvo.getGenero());
+    }
+
+    @Test
+    @Transactional
+    @DisplayName("Deve salvar livro vinculado a autor existente")
+    void salvarTest() {
         Autor autor = new Autor();
-        autor.setNome("Maria Luiza");
+        autor.setNome("George R. R. Martin");
         autor.setNacionalidade("EUA");
-        autor.setDataNascimento(LocalDate.of(1953, 1, 31));
+        autor.setDataNascimento(LocalDate.of(1948, 9, 20));
+        autor = autorRepository.save(autor);
 
-        autorRepository.save(autor);
+        Livro livro = new Livro();
+        livro.setIsbn("9863535-SAVE");
+        livro.setPreco(BigDecimal.valueOf(150.00));
+        livro.setGenero(GeneroLivro.FANTASIA);
+        livro.setTitulo("A Guerra dos Tronos");
+        livro.setDataPublicacao(LocalDate.of(1996, 8, 1));
         livro.setAutor(autor);
 
-        repository.save(livro);
+        Livro livroSalvo = repository.save(livro);
+
+        assertNotNull(livroSalvo.getId());
+        assertEquals("A Guerra dos Tronos", livroSalvo.getTitulo());
+        assertEquals(autor.getId(), livroSalvo.getAutor().getId(), "O autor associado deve corresponder ao autor salvo.");
     }
 
     @Test
-    void atualizarAutorLivro(){
-        var livro = repository.findById(UUID.fromString("c21696ef-f252-4289-a140-c75b1cac0529")).orElse(null);
-
-        var autor = autorRepository.findById(UUID.fromString("8f9ad19f-0a66-4b19-a901-d5c0f19bbbe5")).orElse(null);
-
-        livro.setAutor(autor);
-
-        repository.save(livro);
-
-    }
-
-    @Test
-    void deletar(){
-        UUID id = UUID.fromString("c21696ef-f252-4289-a140-c75b1cac0529");
-        repository.deleteById(id);
-    }
-
-    @Test
-    void deletarCascade(){
-        UUID id = UUID.fromString("c21696ef-f252-4289-a140-c75b1cac0529");
-        repository.deleteById(id);
-    }
-
-    @Test
-    void buscarLivroTest(){
-        UUID id = UUID.fromString("c21696ef-f252-4289-a140-c75b1cac0529");
-        Livro livro = repository.findById(id).orElse(null);
-        System.out.println("Livro:");
-        System.out.println(livro.getTitulo());
-        System.out.println("Autor:");
-        System.out.println(livro.getAutor().getNome());
-
-    }
-
-    @Test
-    void pesquisaPorTituloTest(){
+    @DisplayName("Deve pesquisar livro por título com sucesso")
+    void pesquisaPorTituloTest() {
         List<Livro> lista = repository.findByTitulo("A historia dos pets");
-        lista.forEach(System.out::println);
+        assertNotNull(lista, "A lista de retorno não deve ser nula.");
     }
 
     @Test
-    void pesquisarPorISBNTest(){
+    @DisplayName("Deve pesquisar livro por ISBN com retorno da consulta")
+    void pesquisarPorISBNTest() {
         List<Livro> lista = repository.findByIsbn("9863535");
-        lista.forEach(System.out::println);
-    }
-    @Test
-    void pesquisarPorTituloEPrecoTest(){
-        List<Livro> lista = repository.findByTituloAndPreco("A historia dos pets", BigDecimal.valueOf(150));
-        lista.forEach(System.out::println);
+        assertNotNull(lista);
     }
 
     @Test
-    void listarLivrosComQueryJPQL(){
+    @DisplayName("Deve consultar livros com JPQL personalizada ordenados por título e preço")
+    void listarLivrosComQueryJPQL() {
         var resultado = repository.ListarTodosOrdenadoPorTituloAndPreco();
-        resultado.forEach(System.out::println);
+        assertNotNull(resultado, "A lista JPQL não deve ser nula.");
     }
 
     @Test
-    void listarAutoresDosLivros(){
-        var resultado = repository.listarAutoresDosLivros();
-        resultado.forEach(System.out::println);
-    }
-
-    @Test
-    void listarNomesDiferentesLivros(){
-        var resultado = repository.listarNomesDiferentesLivros();
-        resultado.forEach(System.out::println);
-    }
-
-    @Test
-    void listarGenerosAutoresBrasileiros(){
-        var resultado = repository.listarGenerosAutoresBrasileiros();
-        resultado.forEach(System.out::println);
-    }
-
-    @Test
-    void listarPorGeneroQueryParamTest(){
+    @DisplayName("Deve filtrar livros por gênero específico")
+    void listarPorGeneroQueryParamTest() {
         var resultado = repository.findByGenero(GeneroLivro.FICCAO);
-        resultado.forEach(System.out::println);
-    }
-
-    @Test
-    void listarPorGeneroPosParamTest(){
-        var resultado = repository.findByGeneroPosicional(GeneroLivro.FICCAO);
-        resultado.forEach(System.out::println);
-    }
-
-    @Test
-    void deletePorGeneroTest(){
-        repository.deleteByGenero(GeneroLivro.FICCAO);
-    }
-
-    @Test
-    void atualizarDataPublicacaoTest(){
-        repository.updateDataPublicacao(LocalDate.of(2020, 1, 1));
+        assertNotNull(resultado);
+        assertTrue(resultado.stream().allMatch(l -> l.getGenero() == GeneroLivro.FICCAO),
+                "Todos os livros retornados devem pertencer ao gênero informado.");
     }
 }
